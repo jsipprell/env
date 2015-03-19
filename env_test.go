@@ -7,7 +7,7 @@ import (
 
 func TestParseDuration(t *testing.T) {
 	var cfg = struct {
-		Duration time.Duration `env:"key=DURATION default=5s"`
+		Duration time.Duration `env:"key=DURATION,default=5s"`
 	}{}
 
 	if err := Process(&cfg); err != nil {

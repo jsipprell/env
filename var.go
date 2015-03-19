@@ -28,8 +28,7 @@ func NewVar(field reflect.StructField) (*Var, error) {
 
 // NewVarWithFunc returns a new Var. get returns the value for the given key
 func NewVarWithFunc(field reflect.StructField, get func(string) string) (*Var, error) {
-	// spew.Dump(new(Var).Default == reflect.ValueOf(nil))
-	newVar := &Var{} //Default: reflect.ValueOf(nil)}
+	newVar := &Var{}
 	newVar.Parse(field)
 
 	value, err := convert(newVar.Type, get(newVar.Key))
@@ -45,10 +44,8 @@ func NewVarWithFunc(field reflect.StructField, get func(string) string) (*Var, e
 
 		// Check if we have a default value to set, otherwise set the type's zero value
 		if newVar.Default != reflect.ValueOf(nil) {
-			// fmt.Println("setting default:", newVar.Default.String())
 			newVar.SetValue(newVar.Default)
 		} else {
-			// fmt.Println("No default; setting zero value")
 			newVar.SetValue(reflect.Zero(newVar.Type))
 		}
 	}
@@ -103,12 +100,6 @@ func (v *Var) SetOptions(values []reflect.Value) {
 
 // SetKey sets Var.Key
 func (v *Var) SetKey(value string) {
-	// src := []byte(value)
-	// regex := regexp.MustCompile("[0-9A-Za-z]+")
-	// chunks := regex.FindAll(src, -1)
-	// for i, val := range chunks {
-	//
-	// }
 	v.Key = strings.ToUpper(value)
 }
 
@@ -124,7 +115,7 @@ func (v *Var) Parse(field reflect.StructField) error {
 		return nil
 	}
 
-	tagParams := strings.Split(tag, " ")
+	tagParams := strings.Split(tag, ",")
 	for _, tagParam := range tagParams {
 		var key, value string
 
@@ -186,9 +177,6 @@ func convert(t reflect.Type, value string) (reflect.Value, error) {
 	switch t.Kind() {
 	case reflect.String:
 		return reflect.ValueOf(value), nil
-		// ptr.Elem()
-		// ptr = reflect.ValueOf(value).Elem().Convert(reflect.String)
-		// return reflect.ValueOf(value), nil
 	case reflect.Int:
 		return parseInt(value)
 	case reflect.Bool:
