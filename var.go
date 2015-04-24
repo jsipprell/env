@@ -19,16 +19,24 @@ type Var struct {
 	Required bool
 	Default  reflect.Value
 	Options  []reflect.Value
+
+	fieldSeps string
 }
 
 // NewVar returns a new Var
-func NewVar(field reflect.StructField) (*Var, error) {
-	return NewVarWithFunc(field, os.Getenv)
+func NewVar(field reflect.StructField, fieldSeps ...string) (*Var, error) {
+	return NewVarWithFunc(field, os.Getenv, fieldSeps...)
 }
 
 // NewVarWithFunc returns a new Var. get returns the value for the given key
-func NewVarWithFunc(field reflect.StructField, get func(string) string) (*Var, error) {
+func NewVarWithFunc(field reflect.StructField, get func(string) string, fieldSeps ...string) (*Var, error) {
 	newVar := &Var{}
+	if fs := strings.Join(fieldSeps, ""); fs != "" {
+		newVar.fieldSeps = fs
+	} else {
+		newVar.fieldSeps = " "
+	}
+
 	newVar.Parse(field)
 
 	value, err := convert(newVar.Type, get(newVar.Key))
@@ -115,7 +123,9 @@ func (v *Var) Parse(field reflect.StructField) error {
 		return nil
 	}
 
-	tagParams := strings.Split(tag, ",")
+	tagParams := strings.FieldsFunc(tag, func(r rune) bool {
+		return strings.ContainsRune(v.fieldSeps, r)
+	})
 	for _, tagParam := range tagParams {
 		var key, value string
 

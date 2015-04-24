@@ -10,7 +10,7 @@ func TestParseDuration(t *testing.T) {
 		Duration time.Duration `env:"key=DURATION,default=5s"`
 	}{}
 
-	if err := Process(&cfg); err != nil {
+	if err := Process(&cfg, ","); err != nil {
 		t.Fatal(err)
 	}
 

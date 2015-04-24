@@ -16,8 +16,8 @@ type Env struct {
 
 // Process takes a struct, and maps environment variables to its fields.
 // Errors returned from underlying functions will bubble up to the surface.
-func Process(v interface{}) error {
-	_, err := NewEnv(v)
+func Process(v interface{}, fieldSeps ...string) error {
+	_, err := NewEnv(v, fieldSeps...)
 	if err != nil {
 		return err
 	}
@@ -27,8 +27,8 @@ func Process(v interface{}) error {
 
 // MustProcess maps environment variables to the fields of struct v.
 // If any errors are returned, this function will panic.
-func MustProcess(v interface{}) {
-	_, err := NewEnv(v)
+func MustProcess(v interface{}, fieldSeps ...string) {
+	_, err := NewEnv(v, fieldSeps...)
 	if err != nil {
 		panic(err)
 	}
@@ -54,12 +54,12 @@ func (e *Env) Type() reflect.Type {
 var errInvalidValue = errors.New("expected value must be a pointer to a struct")
 
 // New is a shortcut wrapper around NewEnv
-func New(v interface{}) (*Env, error) {
-	return NewEnv(v)
+func New(v interface{}, fieldSeps ...string) (*Env, error) {
+	return NewEnv(v, fieldSeps...)
 }
 
 // NewEnv returns a new Env
-func NewEnv(v interface{}) (*Env, error) {
+func NewEnv(v interface{}, fieldSeps ...string) (*Env, error) {
 	e := &Env{}
 
 	if reflect.TypeOf(v).Kind() != reflect.Ptr {
@@ -71,7 +71,7 @@ func NewEnv(v interface{}) (*Env, error) {
 
 	e.SetValue(v)
 
-	if err := e.Parse(); err != nil {
+	if err := e.Parse(fieldSeps...); err != nil {
 		return e, err
 	}
 
@@ -93,10 +93,10 @@ func (e *Env) SetPrefix(prefix string) {
 }
 
 // Parse parses the config struct into valid Vars
-func (e *Env) Parse() error {
+func (e *Env) Parse(fieldSeps ...string) error {
 	for _, name := range e.FieldNames() {
 		field, _ := e.Value.Type().FieldByName(name)
-		v, err := NewVar(field)
+		v, err := NewVar(field, fieldSeps...)
 
 		if err != nil {
 			return err
